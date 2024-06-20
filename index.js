@@ -60,7 +60,7 @@ const transformRow = (row, idMap, idKey, hotelId, now) => {
 
   return {
     hotel_id: hotelId,
-    id_key: id,
+    [idKey === 'roomtype' ? 'room_type_id' : 'market_segment_id']: id,
     date: row.currentdate,
     room_sold: row.sumrooms,
     revenue: row.sumroomrevenue,
@@ -77,12 +77,12 @@ const transformRows = (rows, idMap, idKey, hotelId) => {
     .filter((transformedRow) => transformedRow !== null)
 }
 
-const writeCSV = (data, filePath) => {
+const writeCSV = (data, filePath, idKey) => {
   const csvWriter = createCsvWriter({
     path: filePath,
     header: [
       { id: 'hotel_id', title: 'hotel_id' },
-      { id: 'id_key', title: 'id_key' },
+      { id: idKey === 'roomtype' ? 'room_type_id' : 'market_segment_id', title: idKey === 'roomtype' ? 'room_type_id' : 'market_segment_id' },
       { id: 'date', title: 'date' },
       { id: 'room_sold', title: 'room_sold' },
       { id: 'revenue', title: 'revenue' },
@@ -101,7 +101,7 @@ const processCSV = async (filePath, idMap, idKey) => {
     const transformedRows = transformRows(rows, idMap, idKey, hotelId)
     const genDate = dayjs().format('YYYY-MM-DD')
     const outputPath = `data/output/${filePath.split('/')[1]}_stat_${genDate}.csv`
-    await writeCSV(transformedRows, outputPath)
+    await writeCSV(transformedRows, outputPath, idKey)
     console.log('CSV file was written successfully')
   } catch (error) {
     console.error('Error processing CSV file:', error)
@@ -109,7 +109,7 @@ const processCSV = async (filePath, idMap, idKey) => {
 }
 
 // Process room types CSV
-// processCSV('data/HIEX_RT.csv', roomTypes, 'roomtype')
+processCSV('data/HIEX_RT.csv', roomTypes, 'roomtype')
 
 // Process market segments CSV
 processCSV('data/HIEX_Seg Mar 24.csv', marketSegments, 'mktseg')
